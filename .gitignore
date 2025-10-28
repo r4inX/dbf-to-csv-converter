@@ -61,6 +61,7 @@ Thumbs.db
 
 # Setup and local documentation files
 SETUP.md
+SETUP_COMPLETE.md
 
 # Customer data directories - never upload actual business data
 DAT_COVER*/
