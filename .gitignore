@@ -1,0 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Customer data directories - never upload actual business data
+DAT_COVER*/
+*COVER*/
+
+# DBF files - exclude all to prevent accidental upload of sensitive data
+*.dbf
+*.DBF
+*.dbc
+*.DBC
+
+# Large CSV files - exclude to prevent uploading sensitive data
+*_ADRESS.csv
+*_adress.csv
+*ADRESS*.csv
+*adress*.csv
+address_*.csv
+banks_*.csv
+# Add other patterns for your sensitive CSV files as needed
+
+# Logs
+*.log
