@@ -21,37 +21,8 @@ jobs:
     
     - name: Generate changelog
       id: changelog
-      run: |
-        # Simple changelog generation - create a temporary file
-        CHANGELOG_FILE=$(mktemp)
-        echo "## Changes in this release" > $CHANGELOG_FILE
-        echo "" >> $CHANGELOG_FILE
-        
-        if [ "${{ github.ref_name }}" != "v0.1.0" ]; then
-          # Get commits since last tag
-          LAST_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
-          if [ -n "$LAST_TAG" ]; then
-            echo "### Commits since $LAST_TAG:" >> $CHANGELOG_FILE
-            git log --pretty=format:"- %s" $LAST_TAG..HEAD >> $CHANGELOG_FILE
-          else
-            echo "- Package configuration improvements" >> $CHANGELOG_FILE
-            echo "- Build system fixes" >> $CHANGELOG_FILE
-          fi
-        else
-          echo "- Initial release" >> $CHANGELOG_FILE
-          echo "- DBF to CSV conversion with German character support" >> $CHANGELOG_FILE
-          echo "- Multiple encoding detection" >> $CHANGELOG_FILE
-          echo "- Command-line interface" >> $CHANGELOG_FILE
-          echo "- Data cleaning and validation" >> $CHANGELOG_FILE
-        fi
-        
-        # Set output using a simple approach
-        {
-          echo "CHANGELOG<<CHANGELOG_EOF"
-          cat $CHANGELOG_FILE
-          echo "CHANGELOG_EOF"
-        } >> $GITHUB_OUTPUT
-    
+      run: echo "CHANGELOG=Release ${{ github.ref_name }} - Package improvements and bug fixes" >> $GITHUB_OUTPUT
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
