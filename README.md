@@ -21,7 +21,7 @@ A robust Python script to convert DBF (dBASE) files to CSV format with proper ha
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/yourusername/dbf-to-csv-converter.git
+git clone https://github.com/r4inX/dbf-to-csv-converter/dbf-to-csv-converter.git
 cd dbf-to-csv-converter
 ```
 
@@ -73,12 +73,12 @@ python dbf2csv.py --help
 
 ### Basic Conversion
 ```bash
-python dbf2csv.py your_database.dbf
+python dbf2csv.py your_table.dbf
 ```
 
 **Expected Output:**
 ```
-Converting 'your_database.dbf' to 'your_database.csv'
+Converting 'your_table.dbf' to 'your_table.csv'
 Processed 1000 records...
 Processed 2000 records...
 Conversion completed successfully! Processed 2350 records.
