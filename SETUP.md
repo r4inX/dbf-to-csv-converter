@@ -1,23 +1,23 @@
 # Setup Guide for GitHub
 
-## Files to include in your repository:
+## Files to include in your repository
 
-✅ **Core files:**
+**Core files:**
 - `dbf2csv.py` - Main conversion script
 - `requirements.txt` - Python dependencies
 - `README.md` - Documentation
 - `LICENSE` - MIT license
 - `.gitignore` - Git ignore rules
 
-✅ **Utility scripts:**
+**Utility scripts:**
 - `check_csv.py` - Verify German character encoding
 - `test_encoding.py` - Test different DBF encodings
 
-## Files to exclude:
-❌ Your actual DBF data files (DAT_COVER_28102025/) - these contain personal/business data
-❌ Large CSV output files - keep only small demo files
+## Files to exclude
+Your actual DBF data files (DAT_COVER_28102025/) - these contain personal/business data
+Large CSV output files - keep only small demo files
 
-## GitHub commands:
+## GitHub commands
 
 ```bash
 # Initialize repository
@@ -31,7 +31,7 @@ git branch -M main
 git push -u origin main
 ```
 
-## Repository structure:
+## Repository structure
 ```
 dbf-to-csv-converter/
 ├── dbf2csv.py              # Main script

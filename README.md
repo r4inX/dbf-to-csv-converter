@@ -2,7 +2,7 @@
 
 A robust Python script to convert DBF (dBASE) files to CSV format with proper handling of German characters and special formatting requirements.
 
-## 🌟 Features
+## Features
 
 - **Multiple encoding support** - Automatically detects and handles various character encodings (cp1252, iso-8859-1, cp850, etc.)
 - **German character support** - Properly converts German umlauts (ä, ö, ü, ß) and special characters
@@ -12,12 +12,12 @@ A robust Python script to convert DBF (dBASE) files to CSV format with proper ha
 - **Error handling** - Comprehensive error handling with clear error messages
 - **Command-line interface** - Professional argument parsing with help documentation
 
-## 📋 Requirements
+## Requirements
 
 - Python 3.6+
 - `dbfread` library
 
-## 🚀 Installation
+## Installation
 
 1. Clone this repository:
 ```bash
@@ -30,7 +30,7 @@ cd dbf-to-csv-converter
 pip install dbfread
 ```
 
-## 📖 Usage
+## Usage
 
 ### Basic Usage
 
@@ -69,7 +69,7 @@ python dbf2csv.py --help
 | `-e, --encoding` | Output file encoding | `utf-8` |
 | `-h, --help` | Show help message | - |
 
-## 🎯 Example Usage
+## Example Usage
 
 ### Basic Conversion
 ```bash
@@ -96,7 +96,7 @@ The converter produces clean, properly formatted CSV files:
 
 Notice how German characters (ü, ö, ß) are properly preserved in the output.
 
-## 🔧 Utility Scripts
+## Utility Scripts
 
 ### check_csv.py
 Verify that German characters are properly encoded in the converted CSV files:
@@ -114,7 +114,7 @@ Test different character encodings on a DBF file to determine the best encoding:
 python test_encoding.py input_file.dbf
 ```
 
-## 🌍 Character Encoding
+## Character Encoding
 
 The script automatically tries multiple encoding methods in this order:
 
@@ -126,7 +126,7 @@ The script automatically tries multiple encoding methods in this order:
 
 This ensures maximum compatibility with DBF files created by different systems.
 
-## 🛡️ Error Handling
+## Error Handling
 
 The script includes comprehensive error handling for:
 
@@ -136,7 +136,7 @@ The script includes comprehensive error handling for:
 - **Encoding errors** - Tries multiple encodings automatically
 - **Data corruption** - Cleans problematic characters and formatting
 
-## 📊 Data Cleaning Features
+## Data Cleaning Features
 
 - **Line break removal** - Converts `\n`, `\r`, `\t` to spaces
 - **Whitespace normalization** - Removes excessive spaces
@@ -144,15 +144,15 @@ The script includes comprehensive error handling for:
 - **NULL value handling** - Converts None values to empty strings
 - **Quote protection** - All fields are properly quoted to prevent CSV parsing issues
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -168,13 +168,13 @@ A: Try using comma delimiter (`-d ","`) for better Excel compatibility.
 **Q: Large files take too long**
 A: The script shows progress every 1000 records. For very large files, this is normal behavior.
 
-## 📈 Performance
+## Performance
 
 - **Small files** (< 1000 records): Near-instant conversion
 - **Medium files** (1000-10000 records): 1-5 seconds
 - **Large files** (> 10000 records): Progress indicator shows every 1000 records
 
-## 🏆 Acknowledgments
+## Acknowledgments
 
 - Built with the excellent [`dbfread`](https://github.com/olemb/dbfread) library
 - Inspired by the need for reliable German character handling in legacy database conversions
@@ -182,6 +182,6 @@ A: The script shows progress every 1000 records. For very large files, this is n
 
 ---
 
-**Made with ❤️ for the open-source community**
+**Made with love for the open-source community**
 
-If this tool helped you, please consider giving it a ⭐ on GitHub!
+If this tool helped you, please consider giving it a star on GitHub!

@@ -43,6 +43,9 @@ ENV/
 ehthumbs.db
 Thumbs.db
 
+# Setup and local documentation files
+SETUP.md
+
 # Customer data directories - never upload actual business data
 DAT_COVER*/
 *COVER*/
