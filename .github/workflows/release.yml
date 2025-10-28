@@ -22,21 +22,35 @@ jobs:
     - name: Generate changelog
       id: changelog
       run: |
-        # Simple changelog generation - you can enhance this
-        echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
-        echo "## Changes in this release" >> $GITHUB_OUTPUT
-        echo "" >> $GITHUB_OUTPUT
-        if [ "${{ github.ref_name }}" != "v1.0.0" ]; then
+        # Simple changelog generation - create a temporary file
+        CHANGELOG_FILE=$(mktemp)
+        echo "## Changes in this release" > $CHANGELOG_FILE
+        echo "" >> $CHANGELOG_FILE
+        
+        if [ "${{ github.ref_name }}" != "v0.1.0" ]; then
           # Get commits since last tag
-          git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD~1)..HEAD >> $GITHUB_OUTPUT
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            echo "### Commits since $LAST_TAG:" >> $CHANGELOG_FILE
+            git log --pretty=format:"- %s" $LAST_TAG..HEAD >> $CHANGELOG_FILE
+          else
+            echo "- Package configuration improvements" >> $CHANGELOG_FILE
+            echo "- Build system fixes" >> $CHANGELOG_FILE
+          fi
         else
-          echo "- Initial release" >> $GITHUB_OUTPUT
-          echo "- DBF to CSV conversion with German character support" >> $GITHUB_OUTPUT
-          echo "- Multiple encoding detection" >> $GITHUB_OUTPUT
-          echo "- Command-line interface" >> $GITHUB_OUTPUT
-          echo "- Data cleaning and validation" >> $GITHUB_OUTPUT
+          echo "- Initial release" >> $CHANGELOG_FILE
+          echo "- DBF to CSV conversion with German character support" >> $CHANGELOG_FILE
+          echo "- Multiple encoding detection" >> $CHANGELOG_FILE
+          echo "- Command-line interface" >> $CHANGELOG_FILE
+          echo "- Data cleaning and validation" >> $CHANGELOG_FILE
         fi
-        echo "EOF" >> $GITHUB_OUTPUT
+        
+        # Set output using a simple approach
+        {
+          echo "CHANGELOG<<CHANGELOG_EOF"
+          cat $CHANGELOG_FILE
+          echo "CHANGELOG_EOF"
+        } >> $GITHUB_OUTPUT
     
     - name: Create Release
       id: create_release
