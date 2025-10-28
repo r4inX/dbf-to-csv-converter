@@ -8,19 +8,19 @@
     <form action="/upload" method="post" enctype="multipart/form-data" id="uploadForm">
         <div class="upload-area" id="uploadArea">
             <div class="upload-icon">📁</div>
-            <h3>Drop your DBF file here or click to browse</h3>
-            <p>Supported formats: .dbf files (and companion .fpt, .cdx files)</p>
-            <input type="file" name="file" accept=".dbf,.fpt,.cdx,.dbt" class="file-input" id="fileInput" required>
+            <h3>Drop your DBF file(s) here or click to browse</h3>
+            <p>Select your .DBF file and any companion files (.FPT, .CDX)</p>
+            <input type="file" name="file" accept=".dbf,.fpt,.cdx,.dbt" class="file-input" id="fileInput" multiple required>
             <button type="button" class="btn" onclick="document.getElementById('fileInput').click()">
-                Choose File
+                Choose Files
             </button>
         </div>
         
         <div id="fileInfo" style="display: none; margin-top: 1rem;">
             <div class="alert alert-info">
-                <strong>Selected file:</strong> <span id="fileName"></span>
+                <strong>Selected:</strong> <span id="fileName"></span>
                 <br>
-                <strong>Size:</strong> <span id="fileSize"></span>
+                <strong>Total size:</strong> <span id="fileSize"></span>
             </div>
             <button type="submit" class="btn btn-success">
                 📊 Analyze & Preview
@@ -39,9 +39,9 @@
     
     <h4>📋 Important Notes</h4>
     <ul>
-        <li>📁 <strong>Memo Fields:</strong> If your DBF has memo fields, the companion .FPT file should be in the DAT_COVER_28102025 directory</li>
-        <li>🔧 <strong>Complex Files:</strong> For files with memo fields or complex structures, consider using the command line tool</li>
-        <li>💡 <strong>Tip:</strong> Keep all DBF-related files (.dbf, .fpt, .cdx) in the same directory for best results</li>
+        <li>📁 <strong>Memo Fields:</strong> If your DBF has memo fields, upload both the .DBF and .FPT files together</li>
+        <li>🔧 <strong>Multiple Files:</strong> You can select multiple files at once (Ctrl+click or Cmd+click)</li>
+        <li>💡 <strong>Tip:</strong> Upload all related files (.dbf, .fpt, .cdx) for best compatibility</li>
     </ul>
     
     <h4>✨ Features</h4>
@@ -82,20 +82,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const files = e.dataTransfer.files;
         if (files.length > 0) {
             fileInput.files = files;
-            showFileInfo(files[0]);
+            showFilesInfo(files);
         }
     });
     
     // File input change
     fileInput.addEventListener('change', function(e) {
         if (e.target.files.length > 0) {
-            showFileInfo(e.target.files[0]);
+            showFilesInfo(e.target.files);
         }
     });
     
-    function showFileInfo(file) {
-        fileName.textContent = file.name;
-        fileSize.textContent = formatFileSize(file.size);
+    function showFilesInfo(files) {
+        const fileNames = Array.from(files).map(f => f.name).join(', ');
+        const totalSize = Array.from(files).reduce((sum, f) => sum + f.size, 0);
+        
+        fileName.textContent = files.length === 1 ? files[0].name : `${files.length} files: ${fileNames}`;
+        fileSize.textContent = formatFileSize(totalSize);
         fileInfo.style.display = 'block';
     }
     

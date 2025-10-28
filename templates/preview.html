@@ -61,12 +61,23 @@
         </table>
         
         {% if dbf_info.companion_files %}
-        <h3>📎 Companion Files Found</h3>
+        <h3>📎 Companion Files</h3>
         <div class="alert alert-info">
-            <strong>Automatically detected and loaded:</strong>
-            {% for file in dbf_info.companion_files %}
-                <span style="background: #667eea; color: white; padding: 2px 6px; border-radius: 3px; margin-right: 5px;">{{ file }}</span>
+            {% if dbf_info.uploaded_companions %}
+            <strong>✅ Uploaded with DBF:</strong>
+            {% for file in dbf_info.uploaded_companions %}
+                <span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 3px; margin-right: 5px;">{{ file }}</span>
             {% endfor %}
+            <br>
+            {% endif %}
+            {% if dbf_info.companion_files|length > (dbf_info.uploaded_companions|length if dbf_info.uploaded_companions else 0) %}
+            <strong>🔍 Auto-detected:</strong>
+            {% for file in dbf_info.companion_files %}
+                {% if not dbf_info.uploaded_companions or file not in dbf_info.uploaded_companions %}
+                <span style="background: #667eea; color: white; padding: 2px 6px; border-radius: 3px; margin-right: 5px;">{{ file }}</span>
+                {% endif %}
+            {% endfor %}
+            {% endif %}
         </div>
         {% endif %}
         

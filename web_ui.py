@@ -34,21 +34,40 @@ def find_companion_files(dbf_path):
     
     companion_files = []
     
-    # Look for companion files in the DAT_COVER_28102025 directory
-    source_dir = Path('DAT_COVER_28102025')
-    if source_dir.exists():
-        for ext in ['.FPT', '.fpt', '.CDX', '.cdx', '.DBT', '.dbt']:
-            source_file = source_dir / f"{base_name.split('_')[-1]}{ext}"  # Remove session prefix
-            if source_file.exists():
-                # Copy to uploads directory with session prefix
-                dest_file = base_path / f"{Path(dbf_path).stem}{ext}"
-                try:
-                    import shutil
-                    shutil.copy2(source_file, dest_file)
-                    companion_files.append(dest_file)
-                    print(f"Copied companion file: {source_file} -> {dest_file}")
-                except Exception as e:
-                    print(f"Failed to copy {source_file}: {e}")
+    # First, check if companion files were already uploaded with the same session ID
+    session_id = base_name.split('_')[0]
+    dbf_name = '_'.join(base_name.split('_')[1:])  # Remove session prefix
+    
+    for ext in ['.FPT', '.fpt', '.CDX', '.cdx', '.DBT', '.dbt']:
+        # Check if already uploaded
+        uploaded_companion = base_path / f"{session_id}_{dbf_name}{ext}"
+        if uploaded_companion.exists():
+            companion_files.append(uploaded_companion)
+            print(f"Found uploaded companion file: {uploaded_companion}")
+            continue
+            
+        # Look for companion files in common directories
+        potential_dirs = [
+            Path('.'),  # Current directory
+            Path('DAT_COVER_28102025'),  # Specific directory if it exists
+            base_path.parent,  # Parent of uploads directory
+        ]
+        
+        for source_dir in potential_dirs:
+            if source_dir.exists():
+                # Try exact name match
+                source_file = source_dir / f"{dbf_name}{ext}"
+                if source_file.exists():
+                    # Copy to uploads directory with session prefix
+                    dest_file = base_path / f"{session_id}_{dbf_name}{ext}"
+                    try:
+                        import shutil
+                        shutil.copy2(source_file, dest_file)
+                        companion_files.append(dest_file)
+                        print(f"Copied companion file: {source_file} -> {dest_file}")
+                        break  # Found it, don't check other directories
+                    except Exception as e:
+                        print(f"Failed to copy {source_file}: {e}")
     
     return companion_files
 
@@ -173,29 +192,49 @@ def upload_file():
         flash('No file selected')
         return redirect(request.url)
     
-    file = request.files['file']
-    if file.filename == '':
-        flash('No file selected')
+    files = request.files.getlist('file')
+    if not files or all(f.filename == '' for f in files):
+        flash('No files selected')
         return redirect(request.url)
     
-    if file and allowed_file(file.filename):
-        # Generate unique filename
-        session_id = str(uuid.uuid4())
-        filename = secure_filename(file.filename)
-        file_path = app.config['UPLOAD_FOLDER'] / f"{session_id}_{filename}"
-        
-        file.save(file_path)
-        
-        # Get DBF info for preview
-        dbf_info = get_dbf_info(file_path)
-        
-        return render_template('preview.html', 
-                             dbf_info=dbf_info, 
-                             session_id=session_id,
-                             original_filename=filename)
-    else:
-        flash('Invalid file type. Please upload a .dbf file.')
+    # Generate unique session ID
+    session_id = str(uuid.uuid4())
+    
+    # Find the main DBF file and companion files
+    dbf_file = None
+    companion_files = []
+    
+    for file in files:
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = app.config['UPLOAD_FOLDER'] / f"{session_id}_{filename}"
+            file.save(file_path)
+            
+            if filename.lower().endswith('.dbf'):
+                dbf_file = file_path
+                original_filename = filename
+            else:
+                companion_files.append(file_path)
+    
+    if not dbf_file:
+        flash('Please upload a .DBF file')
         return redirect(url_for('index'))
+    
+    # Get DBF info for preview
+    dbf_info = get_dbf_info(dbf_file)
+    
+    # Add info about uploaded companion files
+    if companion_files:
+        uploaded_companions = [f.name.split('_', 1)[1] for f in companion_files]  # Remove session prefix
+        if 'companion_files' not in dbf_info:
+            dbf_info['companion_files'] = []
+        dbf_info['companion_files'].extend(uploaded_companions)
+        dbf_info['uploaded_companions'] = uploaded_companions
+    
+    return render_template('preview.html', 
+                         dbf_info=dbf_info, 
+                         session_id=session_id,
+                         original_filename=original_filename)
 
 @app.route('/convert', methods=['POST'])
 def convert_file():
