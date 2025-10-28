@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>📂 Upload DBF File</h2>
+    <p>Select a DBF file to convert to CSV format. Files up to 50MB are supported.</p>
+    
+    <form action="/upload" method="post" enctype="multipart/form-data" id="uploadForm">
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <h3>Drop your DBF file here or click to browse</h3>
+            <p>Supported format: .dbf files</p>
+            <input type="file" name="file" accept=".dbf" class="file-input" id="fileInput" required>
+            <button type="button" class="btn" onclick="document.getElementById('fileInput').click()">
+                Choose File
+            </button>
+        </div>
+        
+        <div id="fileInfo" style="display: none; margin-top: 1rem;">
+            <div class="alert alert-info">
+                <strong>Selected file:</strong> <span id="fileName"></span>
+                <br>
+                <strong>Size:</strong> <span id="fileSize"></span>
+            </div>
+            <button type="submit" class="btn btn-success">
+                📊 Analyze & Preview
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <h3>🚀 How it works</h3>
+    <ol>
+        <li><strong>Upload:</strong> Select your DBF file (up to 50MB)</li>
+        <li><strong>Preview:</strong> Review file contents and configure options</li>
+        <li><strong>Convert:</strong> Download your CSV file with perfect encoding</li>
+    </ol>
+    
+    <h4>✨ Features</h4>
+    <ul>
+        <li>🌍 Perfect German character support (ä, ö, ü, ß)</li>
+        <li>🔧 Smart encoding detection (cp1252, iso-8859-1, cp850, etc.)</li>
+        <li>⚙️ Customizable delimiters and output encoding</li>
+        <li>📋 Data preview before conversion</li>
+        <li>🧹 Automatic data cleaning and validation</li>
+    </ul>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    
+    // Drag and drop functionality
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            showFileInfo(files[0]);
+        }
+    });
+    
+    // File input change
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            showFileInfo(e.target.files[0]);
+        }
+    });
+    
+    function showFileInfo(file) {
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        fileInfo.style.display = 'block';
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+});
+</script>
+{% endblock %}

@@ -9,15 +9,37 @@
 
 A robust Python script to convert DBF (dBASE) files to CSV format with proper handling of German characters and special formatting requirements.
 
+## 🚀 Quick Start
+
+### Option 1: Web Interface (Recommended)
+```bash
+pip install flask werkzeug dbfread
+python web_ui.py
+# Open http://localhost:5000 in your browser
+```
+
+### Option 2: Command Line
+```bash
+pip install dbfread
+python dbf2csv.py your_file.dbf
+```
+
 ## Features
 
+### 🌐 **Web Interface**
+- **Drag & drop upload** - Easy file selection with visual feedback
+- **Real-time preview** - See your data structure before conversion
+- **Smart options** - Automatic encoding detection with manual override
+- **Progress tracking** - Visual progress bar during conversion
+- **One-click download** - Instant CSV file download
+
+### 🖥️ **Command Line**
 - **Multiple encoding support** - Automatically detects and handles various character encodings (cp1252, iso-8859-1, cp850, etc.)
 - **German character support** - Properly converts German umlauts (ä, ö, ü, ß) and special characters
 - **Configurable delimiters** - Choose between semicolon (`;`) or comma (`,`) delimiters
 - **Data cleaning** - Removes line breaks and problematic characters from memo fields
 - **Progress tracking** - Shows conversion progress for large files
 - **Error handling** - Comprehensive error handling with clear error messages
-- **Command-line interface** - Professional argument parsing with help documentation
 
 ## Requirements
 

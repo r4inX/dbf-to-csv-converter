@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if dbf_info.error %}
+    <div class="card">
+        <h2>❌ Error Reading File</h2>
+        <div class="alert alert-error">
+            {{ dbf_info.error }}
+        </div>
+        <a href="/" class="btn">← Try Another File</a>
+    </div>
+{% else %}
+    <div class="card">
+        <h2>📊 File Preview: {{ dbf_info.filename }}</h2>
+        
+        <!-- File Information -->
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="value">{{ "{:,}".format(dbf_info.record_count) }}</div>
+                <div class="label">Records</div>
+            </div>
+            <div class="info-item">
+                <div class="value">{{ dbf_info.field_count }}</div>
+                <div class="label">Fields</div>
+            </div>
+            <div class="info-item">
+                <div class="value">{{ "%.1f"|format(dbf_info.file_size / 1024) }} KB</div>
+                <div class="label">File Size</div>
+            </div>
+            <div class="info-item">
+                <div class="value">{{ dbf_info.encoding_used }}</div>
+                <div class="label">Detected Encoding</div>
+            </div>
+        </div>
+        
+        <!-- Field Structure -->
+        <h3>📋 Field Structure</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Type</th>
+                    <th>Length</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for field in dbf_info.fields %}
+                <tr>
+                    <td><strong>{{ field.name }}</strong></td>
+                    <td>{{ field.type }}</td>
+                    <td>{{ field.length }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- Sample Data -->
+        {% if dbf_info.sample_records %}
+        <h3>👀 Sample Data (First 3 Records)</h3>
+        <div style="overflow-x: auto;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        {% for field in dbf_info.fields %}
+                        <th>{{ field.name }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in dbf_info.sample_records %}
+                    <tr>
+                        {% for field in dbf_info.fields %}
+                        <td>{{ record.get(field.name, '') | truncate(30) }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Conversion Options -->
+    <div class="card">
+        <h2>⚙️ Conversion Options</h2>
+        <form id="convertForm">
+            <input type="hidden" name="session_id" value="{{ session_id }}">
+            <input type="hidden" name="original_filename" value="{{ original_filename }}">
+            
+            <div class="form-group">
+                <label for="delimiter">CSV Delimiter:</label>
+                <select name="delimiter" id="delimiter" class="form-control">
+                    <option value=";">Semicolon (;) - German Standard</option>
+                    <option value=",">Comma (,) - International</option>
+                    <option value="|">Pipe (|)</option>
+                    <option value="&#9;">Tab</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="encoding">Output Encoding:</label>
+                <select name="encoding" id="encoding" class="form-control">
+                    <option value="utf-8">UTF-8 (Recommended)</option>
+                    <option value="cp1252">Windows-1252 (Western European)</option>
+                    <option value="iso-8859-1">ISO-8859-1 (Latin-1)</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button type="submit" class="btn btn-success">
+                    🔄 Convert to CSV
+                </button>
+                <a href="/" class="btn btn-secondary">
+                    ← Upload Different File
+                </a>
+            </div>
+        </form>
+        
+        <!-- Progress Bar -->
+        <div id="progressSection" style="display: none; margin-top: 2rem;">
+            <h4>Converting...</h4>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            </div>
+            <p id="progressText">Starting conversion...</p>
+        </div>
+        
+        <!-- Download Section -->
+        <div id="downloadSection" style="display: none; margin-top: 2rem;">
+            <div class="alert alert-success">
+                <strong>✅ Conversion Complete!</strong>
+                Your CSV file is ready for download.
+            </div>
+            <a id="downloadLink" class="btn btn-success" download>
+                📥 Download CSV File
+            </a>
+            <button type="button" class="btn btn-secondary" onclick="cleanupAndReturn()">
+                🗑️ Clean Up & Return
+            </button>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const convertForm = document.getElementById('convertForm');
+    const progressSection = document.getElementById('progressSection');
+    const downloadSection = document.getElementById('downloadSection');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const downloadLink = document.getElementById('downloadLink');
+    
+    convertForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        convertFile();
+    });
+    
+    function convertFile() {
+        // Show progress
+        progressSection.style.display = 'block';
+        downloadSection.style.display = 'none';
+        
+        // Simulate progress (since we don't have real-time progress from Flask)
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 90) progress = 90;
+            progressBar.style.width = progress + '%';
+            progressText.textContent = `Converting... ${Math.round(progress)}%`;
+        }, 200);
+        
+        // Prepare form data
+        const formData = new FormData(convertForm);
+        
+        // Send conversion request
+        fetch('/convert', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            clearInterval(progressInterval);
+            progressBar.style.width = '100%';
+            progressText.textContent = 'Conversion complete!';
+            
+            if (data.success) {
+                downloadLink.href = data.download_url;
+                setTimeout(() => {
+                    progressSection.style.display = 'none';
+                    downloadSection.style.display = 'block';
+                }, 500);
+            } else {
+                alert('Conversion failed: ' + (data.error || 'Unknown error'));
+                progressSection.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            clearInterval(progressInterval);
+            alert('Network error: ' + error.message);
+            progressSection.style.display = 'none';
+        });
+    }
+    
+    window.cleanupAndReturn = function() {
+        const sessionId = document.querySelector('input[name="session_id"]').value;
+        fetch(`/cleanup/${sessionId}`)
+        .then(() => {
+            window.location.href = '/';
+        })
+        .catch(() => {
+            window.location.href = '/';
+        });
+    };
+});
+</script>
+{% endblock %}
