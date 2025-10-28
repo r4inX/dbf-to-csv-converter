@@ -31,6 +31,12 @@
                 <div class="value">{{ dbf_info.encoding_used }}</div>
                 <div class="label">Detected Encoding</div>
             </div>
+            {% if dbf_info.companion_files %}
+            <div class="info-item">
+                <div class="value">{{ dbf_info.companion_files|length }}</div>
+                <div class="label">Companion Files</div>
+            </div>
+            {% endif %}
         </div>
         
         <!-- Field Structure -->
@@ -54,6 +60,16 @@
             </tbody>
         </table>
         
+        {% if dbf_info.companion_files %}
+        <h3>📎 Companion Files Found</h3>
+        <div class="alert alert-info">
+            <strong>Automatically detected and loaded:</strong>
+            {% for file in dbf_info.companion_files %}
+                <span style="background: #667eea; color: white; padding: 2px 6px; border-radius: 3px; margin-right: 5px;">{{ file }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
         <!-- Sample Data -->
         {% if dbf_info.sample_records %}
         <h3>👀 Sample Data (First 3 Records)</h3>
@@ -70,12 +86,18 @@
                     {% for record in dbf_info.sample_records %}
                     <tr>
                         {% for field in dbf_info.fields %}
-                        <td>{{ record.get(field.name, '') | truncate(30) }}</td>
+                        <td>{{ record.get(field.name, '') | string | truncate(30) }}</td>
                         {% endfor %}
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+        {% elif dbf_info.sample_error %}
+        <h3>👀 Sample Data</h3>
+        <div class="alert alert-info">
+            <strong>Note:</strong> {{ dbf_info.sample_error }}
+            <br>Field structure is available, but sample data could not be read. Conversion may still work.
         </div>
         {% endif %}
     </div>

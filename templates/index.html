@@ -9,8 +9,8 @@
         <div class="upload-area" id="uploadArea">
             <div class="upload-icon">📁</div>
             <h3>Drop your DBF file here or click to browse</h3>
-            <p>Supported format: .dbf files</p>
-            <input type="file" name="file" accept=".dbf" class="file-input" id="fileInput" required>
+            <p>Supported formats: .dbf files (and companion .fpt, .cdx files)</p>
+            <input type="file" name="file" accept=".dbf,.fpt,.cdx,.dbt" class="file-input" id="fileInput" required>
             <button type="button" class="btn" onclick="document.getElementById('fileInput').click()">
                 Choose File
             </button>
@@ -36,6 +36,13 @@
         <li><strong>Preview:</strong> Review file contents and configure options</li>
         <li><strong>Convert:</strong> Download your CSV file with perfect encoding</li>
     </ol>
+    
+    <h4>📋 Important Notes</h4>
+    <ul>
+        <li>📁 <strong>Memo Fields:</strong> If your DBF has memo fields, the companion .FPT file should be in the DAT_COVER_28102025 directory</li>
+        <li>🔧 <strong>Complex Files:</strong> For files with memo fields or complex structures, consider using the command line tool</li>
+        <li>💡 <strong>Tip:</strong> Keep all DBF-related files (.dbf, .fpt, .cdx) in the same directory for best results</li>
+    </ul>
     
     <h4>✨ Features</h4>
     <ul>
