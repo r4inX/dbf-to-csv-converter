@@ -7,7 +7,7 @@ name = "dbf-to-csv-converter"
 version = "1.0.0"
 description = "Convert DBF files to CSV with German character support"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
     {name = "r4inX", email = "vik.lamp.vl@gmail.com"}
 ]
@@ -15,7 +15,6 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: End Users/Desktop",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
@@ -41,6 +40,9 @@ Documentation = "https://github.com/r4inX/dbf-to-csv-converter#readme"
 
 [project.scripts]
 dbf2csv = "dbf2csv:main"
+
+[tool.setuptools]
+py-modules = ["dbf2csv"]
 
 [tool.black]
 line-length = 88
