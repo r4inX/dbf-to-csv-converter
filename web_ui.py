@@ -8,12 +8,13 @@ import os
 import tempfile
 import uuid
 from pathlib import Path
-from flask import Flask, render_template, request, jsonify, send_file, flash, redirect, url_for
+from flask import Flask, render_template, request, send_file, jsonify, session, flash, redirect, url_for
 from werkzeug.utils import secure_filename
 import dbf2csv
+from data_validator import DBFDataValidator
 
 app = Flask(__name__)
-app.secret_key = 'dbf-converter-secret-key-change-in-production'
+app.secret_key = 'dbf-converter-secret-key-change-in-production'  # Change this in production
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
 
 # Create uploads directory
@@ -151,6 +152,32 @@ def get_dbf_info(dbf_path):
                     print(f"Sample data error with {encoding}: {e}")
                 
                 info['sample_records'] = sample_records
+                
+                # Run data validation for preview
+                try:
+                    validator = DBFDataValidator(sample_records, info['fields'], encoding)
+                    # Run quick validation on sample data
+                    validation_preview = {
+                        'duplicates_in_sample': len([r for r in sample_records if sample_records.count(r) > 1]),
+                        'encoding_confidence': validator._test_encoding_quality([str(v) for r in sample_records for v in r.values() if v], encoding),
+                        'sample_field_analysis': {}
+                    }
+                    
+                    # Quick field analysis on sample
+                    for field in info['fields']:
+                        field_name = field['name']
+                        values = [r.get(field_name) for r in sample_records if r.get(field_name) is not None]
+                        validation_preview['sample_field_analysis'][field_name] = {
+                            'sample_values': len(values),
+                            'unique_values': len(set(str(v) for v in values)),
+                            'has_nulls': any(r.get(field_name) is None for r in sample_records)
+                        }
+                    
+                    info['validation_preview'] = validation_preview
+                except Exception as e:
+                    print(f"Validation preview failed: {e}")
+                    info['validation_preview'] = None
+                
                 print(f"Successfully read DBF with encoding: {encoding}")
                 return info
                     
@@ -236,16 +263,94 @@ def upload_file():
                          session_id=session_id,
                          original_filename=original_filename)
 
+@app.route('/validate', methods=['POST'])
+def validate_data():
+    """Validate DBF files and return analysis results."""
+    try:
+        print("=== VALIDATION REQUEST RECEIVED ===")
+        session_id = request.form['session_id']
+        original_filename = request.form.get('original_filename')
+        print(f"Session ID: {session_id}")
+        print(f"Original filename: {original_filename}")
+        
+        # Find uploaded file
+        dbf_path = None
+        for file_path in app.config['UPLOAD_FOLDER'].glob(f"{session_id}_*"):
+            if file_path.name.endswith(original_filename):
+                dbf_path = file_path
+                break
+        
+        print(f"Found DBF path: {dbf_path}")
+        
+        if not dbf_path or not dbf_path.exists():
+            print("ERROR: Original file not found")
+            return jsonify({'success': False, 'error': 'Original file not found'})
+        
+        # Get validation options from form
+        validate_duplicates = 'validate_duplicates' in request.form
+        validate_types = 'validate_types' in request.form
+        validate_encoding = 'validate_encoding' in request.form
+        print(f"Validation options: duplicates={validate_duplicates}, types={validate_types}, encoding={validate_encoding}")
+        
+        # Read DBF file and run validation
+        from dbfread import DBF
+        from data_validator import DBFDataValidator
+        
+        # Try different encodings
+        for encoding in ['cp1252', 'iso-8859-1', 'cp850', 'cp437', 'utf-8']:
+            try:
+                print(f"Trying encoding: {encoding}")
+                dbf = DBF(dbf_path, encoding=encoding, char_decode_errors='ignore')
+                records = list(dbf)
+                field_info = [{'name': f.name, 'type': f.type, 'length': f.length} for f in dbf.fields]
+                
+                print(f"Successfully read {len(records)} records with {len(field_info)} fields")
+                
+                # Run validation
+                validator = DBFDataValidator(records, field_info, encoding)
+                results = validator.run_full_validation()
+                
+                print("Validation completed successfully")
+                return jsonify({
+                    'success': True,
+                    'validation_results': results
+                })
+                
+            except Exception as e:
+                print(f"Validation failed with encoding {encoding}: {e}")
+                continue
+        
+        print("ERROR: Could not validate file with any supported encoding")
+        return jsonify({
+            'success': False,
+            'error': 'Could not validate file with any supported encoding'
+        })
+        
+    except Exception as e:
+        print(f"VALIDATION ERROR: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        })
+
+
 @app.route('/convert', methods=['POST'])
 def convert_file():
     """Convert DBF file to CSV with user-specified options"""
     try:
+        print("=== CONVERSION REQUEST RECEIVED ===")
         session_id = request.form.get('session_id')
         original_filename = request.form.get('original_filename')
         delimiter = request.form.get('delimiter', ';')
         encoding = request.form.get('encoding', 'utf-8')
         
+        print(f"Session ID: {session_id}")
+        print(f"Original filename: {original_filename}")
+        print(f"Delimiter: {delimiter}")
+        print(f"Encoding: {encoding}")
+        
         if not session_id or not original_filename:
+            print("ERROR: Missing session information")
             return jsonify({'error': 'Missing session information'}), 400
         
         # Find uploaded file
@@ -255,12 +360,17 @@ def convert_file():
                 dbf_path = file_path
                 break
         
+        print(f"Found DBF path: {dbf_path}")
+        
         if not dbf_path or not dbf_path.exists():
+            print("ERROR: Original file not found")
             return jsonify({'error': 'Original file not found'}), 404
         
         # Create output filename
         csv_filename = f"{Path(original_filename).stem}.csv"
         csv_path = app.config['UPLOAD_FOLDER'] / f"{session_id}_{csv_filename}"
+        
+        print(f"CSV output path: {csv_path}")
         
         # Convert file
         success = dbf2csv.convert_dbf_to_csv(
@@ -270,17 +380,23 @@ def convert_file():
             encoding=encoding
         )
         
+        print(f"Conversion success: {success}")
+        
         if success:
+            download_url = url_for('download_file', 
+                                  session_id=session_id, 
+                                  filename=csv_filename)
+            print(f"Download URL: {download_url}")
             return jsonify({
                 'success': True,
-                'download_url': url_for('download_file', 
-                                      session_id=session_id, 
-                                      filename=csv_filename)
+                'download_url': download_url
             })
         else:
+            print("ERROR: Conversion failed")
             return jsonify({'error': 'Conversion failed'}), 500
             
     except Exception as e:
+        print(f"CONVERSION ERROR: {e}")
         return jsonify({'error': f'Conversion error: {str(e)}'}), 500
 
 @app.route('/download/<session_id>/<filename>')
@@ -311,6 +427,7 @@ def cleanup_files(session_id):
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

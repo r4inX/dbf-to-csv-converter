@@ -81,6 +81,25 @@
         </div>
         {% endif %}
         
+        <!-- Data Validation Preview -->
+        {% if dbf_info.validation_preview %}
+        <h3>🔍 Data Quality Preview</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="value">{{ "%.0f"|format(dbf_info.validation_preview.encoding_confidence) }}%</div>
+                <div class="label">Encoding Confidence</div>
+            </div>
+            <div class="info-item">
+                <div class="value">{{ dbf_info.validation_preview.duplicates_in_sample }}</div>
+                <div class="label">Duplicates in Sample</div>
+            </div>
+            <div class="info-item">
+                <div class="value">{{ dbf_info.validation_preview.sample_field_analysis|length }}</div>
+                <div class="label">Fields Analyzed</div>
+            </div>
+        </div>
+        {% endif %}
+        
         <!-- Sample Data -->
         {% if dbf_info.sample_records %}
         <h3>👀 Sample Data (First 3 Records)</h3>
@@ -139,9 +158,28 @@
                 </select>
             </div>
             
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="run_validation" id="runValidation" style="margin-right: 8px;">
+                    Run comprehensive data quality validation
+                </label>
+                <p style="font-size: 0.9rem; color: #6c757d; margin-top: 4px;">
+                    Analyzes duplicates, data types, missing values, and overall quality score
+                </p>
+            </div>
+            
             <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
                 <button type="submit" class="btn btn-success">
                     🔄 Convert to CSV
+                </button>
+                <button type="button" class="btn" id="validateBtn">
+                    🔍 Run Data Validation
+                </button>
+                <button type="button" class="btn btn-warning" id="testBtn">
+                    🧪 Test Function
+                </button>
+                <button type="button" class="btn btn-info" id="debugBtn">
+                    🐛 Debug Functions
                 </button>
                 <a href="/" class="btn btn-secondary">
                     ← Upload Different File
@@ -171,12 +209,105 @@
                 🗑️ Clean Up & Return
             </button>
         </div>
+        
+        <!-- Validation Results Section -->
+        <div id="validationSection" style="display: none; margin-top: 2rem;">
+            <h3>📊 Data Quality Validation Results</h3>
+            <div id="validationResults"></div>
+        </div>
     </div>
 {% endif %}
 {% endblock %}
 
 {% block scripts %}
 <script>
+// Test function
+window.testFunction = function() {
+    alert('Test function works!');
+};
+
+// Debug function to check what's available
+window.debugFunctions = function() {
+    console.log('window.runValidation:', typeof window.runValidation);
+    console.log('window.testFunction:', typeof window.testFunction);
+    console.log('window.cleanupAndReturn:', typeof window.cleanupAndReturn);
+    alert('Check console for function debug info');
+};
+
+// Global cleanup function
+window.cleanupAndReturn = function() {
+    const sessionId = document.querySelector('input[name="session_id"]').value;
+    fetch(`/cleanup/${sessionId}`)
+    .then(() => {
+        window.location.href = '/';
+    })
+    .catch(() => {
+        window.location.href = '/';
+    });
+};
+
+// Global validation function
+window.runValidation = function() {
+    console.log('runValidation function called successfully!');
+    alert('Validation button clicked!');
+    
+    const convertForm = document.getElementById('convertForm');
+    const validationSection = document.getElementById('validationSection');
+    
+    if (!convertForm) {
+        alert('Convert form not found!');
+        return;
+    }
+    
+    if (!validationSection) {
+        alert('Validation section not found!');
+        return;
+    }
+    
+    const formData = new FormData(convertForm);
+    console.log('FormData created');
+    
+    validationSection.style.display = 'block';
+    document.getElementById('validationResults').innerHTML = '<div class="alert alert-info">Running validation analysis...</div>';
+    
+    fetch('/validate', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Validation data received:', data);
+        if (data.success) {
+            displayValidationResults(data.validation_results);
+        } else {
+            document.getElementById('validationResults').innerHTML = 
+                '<div class="alert alert-error">Validation failed: ' + data.error + '</div>';
+        }
+    })
+    .catch(error => {
+        console.error('Validation error:', error);
+        document.getElementById('validationResults').innerHTML = 
+            '<div class="alert alert-error">Network error: ' + error.message + '</div>';
+    });
+};
+
+// Ensure the function is available immediately
+console.log('Functions defined - window.runValidation:', typeof window.runValidation);
+
+// Validation results display function
+function displayValidationResults(results) {
+    const html = `
+        <div class="alert alert-success">
+            <strong>📊 Quality Score: ${results.quality_score.overall_score.toFixed(1)}</strong><br>
+            <strong>Grade: ${results.summary.overall_quality}</strong><br>
+            <strong>Duplicates: ${results.duplicates.total_duplicates}</strong><br>
+            <strong>Encoding: ${results.encoding_confidence.confidence_level}</strong>
+        </div>
+    `;
+    document.getElementById('validationResults').innerHTML = html;
+}
+
+// DOM ready event listener for form handling
 document.addEventListener('DOMContentLoaded', function() {
     const convertForm = document.getElementById('convertForm');
     const progressSection = document.getElementById('progressSection');
@@ -185,17 +316,55 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressText = document.getElementById('progressText');
     const downloadLink = document.getElementById('downloadLink');
     
+    // Add event listeners to buttons using IDs
+    const validationBtn = document.getElementById('validateBtn');
+    const testBtn = document.getElementById('testBtn');
+    const debugBtn = document.getElementById('debugBtn');
+    
+    if (validationBtn) {
+        validationBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Validation button clicked via event listener');
+            if (window.runValidation) {
+                window.runValidation();
+            } else {
+                alert('runValidation function not found!');
+                console.error('window.runValidation is not defined');
+            }
+        });
+    }
+    
+    if (testBtn) {
+        testBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (window.testFunction) {
+                window.testFunction();
+            } else {
+                alert('testFunction not found!');
+            }
+        });
+    }
+    
+    if (debugBtn) {
+        debugBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (window.debugFunctions) {
+                window.debugFunctions();
+            } else {
+                alert('debugFunctions not found!');
+            }
+        });
+    }
+    
     convertForm.addEventListener('submit', function(e) {
         e.preventDefault();
         convertFile();
     });
     
     function convertFile() {
-        // Show progress
         progressSection.style.display = 'block';
         downloadSection.style.display = 'none';
         
-        // Simulate progress (since we don't have real-time progress from Flask)
         let progress = 0;
         const progressInterval = setInterval(() => {
             progress += Math.random() * 15;
@@ -204,10 +373,8 @@ document.addEventListener('DOMContentLoaded', function() {
             progressText.textContent = `Converting... ${Math.round(progress)}%`;
         }, 200);
         
-        // Prepare form data
         const formData = new FormData(convertForm);
         
-        // Send conversion request
         fetch('/convert', {
             method: 'POST',
             body: formData
@@ -235,17 +402,6 @@ document.addEventListener('DOMContentLoaded', function() {
             progressSection.style.display = 'none';
         });
     }
-    
-    window.cleanupAndReturn = function() {
-        const sessionId = document.querySelector('input[name="session_id"]').value;
-        fetch(`/cleanup/${sessionId}`)
-        .then(() => {
-            window.location.href = '/';
-        })
-        .catch(() => {
-            window.location.href = '/';
-        });
-    };
 });
 </script>
 {% endblock %}
