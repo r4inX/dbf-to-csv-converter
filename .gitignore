@@ -63,6 +63,13 @@ Thumbs.db
 SETUP.md
 SETUP_COMPLETE.md
 
+# Test files and temporary output
+test_*.html
+test_*.json
+test_*.csv
+*.temp
+*.tmp
+
 # Customer data directories - never upload actual business data
 DAT_COVER*/
 *COVER*/
