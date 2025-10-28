@@ -1,5 +1,12 @@
 # DBF to CSV Converter
 
+[![CI](https://github.com/r4inX/dbf-to-csv-converter/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/r4inX/dbf-to-csv-converter/actions)
+[![codecov](https://codecov.io/gh/r4inX/dbf-to-csv-converter/branch/master/graph/badge.svg)](https://codecov.io/gh/r4inX/dbf-to-csv-converter)
+[![PyPI version](https://badge.fury.io/py/dbf-to-csv-converter.svg)](https://badge.fury.io/py/dbf-to-csv-converter)
+[![Python versions](https://img.shields.io/pypi/pyversions/dbf-to-csv-converter.svg)](https://pypi.org/project/dbf-to-csv-converter/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 A robust Python script to convert DBF (dBASE) files to CSV format with proper handling of German characters and special formatting requirements.
 
 ## Features

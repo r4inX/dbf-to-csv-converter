@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Simple changelog generation - you can enhance this
+        echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+        echo "## Changes in this release" >> $GITHUB_OUTPUT
+        echo "" >> $GITHUB_OUTPUT
+        if [ "${{ github.ref_name }}" != "v1.0.0" ]; then
+          # Get commits since last tag
+          git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD~1)..HEAD >> $GITHUB_OUTPUT
+        else
+          echo "- Initial release" >> $GITHUB_OUTPUT
+          echo "- DBF to CSV conversion with German character support" >> $GITHUB_OUTPUT
+          echo "- Multiple encoding detection" >> $GITHUB_OUTPUT
+          echo "- Command-line interface" >> $GITHUB_OUTPUT
+          echo "- Data cleaning and validation" >> $GITHUB_OUTPUT
+        fi
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref_name }}
+        body: ${{ steps.changelog.outputs.CHANGELOG }}
+        draft: false
+        prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Create source distribution
+      run: |
+        python -m pip install --upgrade pip build
+        python -m build --sdist
+        
+        # Create a zip file for easy download
+        zip -r dbf-to-csv-converter-${{ github.ref_name }}.zip . \
+          -x "*.git*" "*__pycache__*" "*.pyc" "*/.*" "build/*" "dist/*" "*.egg-info/*" \
+          "DAT_COVER*" "tests/__pycache__*" "SETUP.md"
+        
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dbf-to-csv-converter-${{ github.ref_name }}.zip
+        asset_name: dbf-to-csv-converter-${{ github.ref_name }}.zip
+        asset_content_type: application/zip

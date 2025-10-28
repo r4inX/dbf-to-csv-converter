@@ -26,6 +26,22 @@ venv/
 env/
 ENV/
 .venv
+.env
+
+# Testing
+.coverage
+.pytest_cache/
+coverage.xml
+*.cover
+.hypothesis/
+htmlcov/
+
+# Development tools
+.mypy_cache/
+.pre-commit-config.yaml.backup
+
+# Documentation builds
+docs/_build/
 
 # IDE
 .vscode/
