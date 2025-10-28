@@ -1,0 +1,60 @@
+title: DBF to CSV Converter
+description: >-
+  A robust Python script to convert DBF (dBASE) files to CSV format 
+  with proper handling of German characters and special formatting requirements.
+
+baseurl: "/dbf-to-csv-converter"
+url: "https://r4inx.github.io"
+
+# Build settings
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Social media and contact info
+github_username: r4inX
+repository: r4inX/dbf-to-csv-converter
+
+# Navigation
+header_pages:
+  - README.md
+
+# SEO and social media
+twitter:
+  username: r4inX
+  card: summary
+
+social:
+  name: r4inX
+  links:
+    - https://github.com/r4inX
+
+# Google Analytics (optional - add your tracking ID)
+# google_analytics: UA-XXXXXXXX-X
+
+# Exclude files from processing
+exclude:
+  - .github/
+  - tests/
+  - __pycache__/
+  - "*.egg-info/"
+  - build/
+  - dist/
+  - .gitignore
+  - .pre-commit-config.yaml
+  - requirements-dev.txt
+  - pyproject.toml
+  - coverage.xml
+  - SETUP.md
+  - SETUP_COMPLETE.md
+  - DAT_COVER*/
+
+# Markdown settings
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge

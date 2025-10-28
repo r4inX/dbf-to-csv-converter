@@ -189,6 +189,21 @@ A: The script shows progress every 1000 records. For very large files, this is n
 
 ---
 
-**Made with love for the open-source community**
+## Project Stats
 
-If this tool helped you, please consider giving it a star on GitHub!
+![GitHub repo size](https://img.shields.io/github/repo-size/r4inX/dbf-to-csv-converter)
+![GitHub code size](https://img.shields.io/github/languages/code-size/r4inX/dbf-to-csv-converter)
+![GitHub last commit](https://img.shields.io/github/last-commit/r4inX/dbf-to-csv-converter)
+
+## Support
+
+- **Documentation**: You're reading it!
+- **Bug Reports**: [Create an issue](https://github.com/r4inX/dbf-to-csv-converter/issues)
+- **Feature Requests**: [Start a discussion](https://github.com/r4inX/dbf-to-csv-converter/discussions)
+- **Show Support**: Give this repo a star if it helped you!
+
+---
+
+**Made with ❤️ for the open-source community**
+
+If this tool helped you, please consider giving it a star ⭐ on GitHub!
