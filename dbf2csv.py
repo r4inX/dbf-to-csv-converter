@@ -8,10 +8,17 @@ from pathlib import Path
 from dbfread import DBF
 
 
-def convert_dbf_to_csv(input_file, output_file=None, delimiter=";", encoding="utf-8", validate=False, validation_report=None):
+def convert_dbf_to_csv(
+    input_file,
+    output_file=None,
+    delimiter=";",
+    encoding="utf-8",
+    validate=False,
+    validation_report=None,
+):
     """
     Convert DBF file to CSV with proper error handling and data cleaning
-    
+
     Args:
         input_file: Path to DBF file
         output_file: Path to output CSV file
@@ -106,22 +113,28 @@ def convert_dbf_to_csv(input_file, output_file=None, delimiter=";", encoding="ut
             print(
                 f"Conversion completed successfully! Processed {record_count} records."
             )
-            
+
             # Run validation if requested
             if validate:
-                print("\n" + "="*50)
+                print("\n" + "=" * 50)
                 print("🔍 Running data validation analysis...")
-                print("="*50)
-                
+                print("=" * 50)
+
                 try:
                     from data_validator import DBFDataValidator
-                    
+
                     # Re-read the DBF file for validation
                     validation_records = []
                     validation_dbf = None
-                    
+
                     # Try the same encoding sequence as conversion
-                    for encoding_attempt in ['cp1252', 'iso-8859-1', 'cp850', 'cp437', 'utf-8']:
+                    for encoding_attempt in [
+                        "cp1252",
+                        "iso-8859-1",
+                        "cp850",
+                        "cp437",
+                        "utf-8",
+                    ]:
                         try:
                             validation_dbf = DBF(input_file, encoding=encoding_attempt)
                             validation_records = list(validation_dbf)
@@ -129,44 +142,56 @@ def convert_dbf_to_csv(input_file, output_file=None, delimiter=";", encoding="ut
                             break
                         except UnicodeDecodeError:
                             continue
-                    
+
                     if validation_dbf and validation_records:
-                        field_info = [{'name': f.name, 'type': f.type, 'length': f.length} for f in validation_dbf.fields]
-                        
+                        field_info = [
+                            {"name": f.name, "type": f.type, "length": f.length}
+                            for f in validation_dbf.fields
+                        ]
+
                         # Run validation
-                        validator = DBFDataValidator(validation_records, field_info, used_encoding)
+                        validator = DBFDataValidator(
+                            validation_records, field_info, used_encoding
+                        )
                         validation_results = validator.run_full_validation()
-                        
+
                         # Print summary
-                        summary = validation_results['summary']
+                        summary = validation_results["summary"]
                         print(f"📊 Quality Grade: {summary['overall_quality']}")
-                        print(f"🔍 Duplicates: {validation_results['duplicates']['total_duplicates']} groups")
-                        print(f"🌍 Encoding Confidence: {validation_results['encoding_confidence']['confidence_level']}")
-                        
-                        if summary['key_findings']:
+                        print(
+                            f"🔍 Duplicates: {validation_results['duplicates']['total_duplicates']} groups"
+                        )
+                        print(
+                            f"🌍 Encoding Confidence: {validation_results['encoding_confidence']['confidence_level']}"
+                        )
+
+                        if summary["key_findings"]:
                             print("\n🔍 Key Findings:")
-                            for finding in summary['key_findings'][:3]:  # Limit to 3
+                            for finding in summary["key_findings"][:3]:  # Limit to 3
                                 print(f"  • {finding}")
-                        
-                        if summary['recommendations']:
+
+                        if summary["recommendations"]:
                             print("\n💡 Recommendations:")
-                            for rec in summary['recommendations'][:3]:  # Limit to 3
+                            for rec in summary["recommendations"][:3]:  # Limit to 3
                                 print(f"  • {rec}")
-                        
+
                         # Save detailed report if requested
                         if validation_report:
                             import json
-                            with open(validation_report, 'w', encoding='utf-8') as f:
+
+                            with open(validation_report, "w", encoding="utf-8") as f:
                                 json.dump(validation_results, f, indent=2, default=str)
-                            print(f"\n📄 Detailed validation report saved to: {validation_report}")
-                    
+                            print(
+                                f"\n📄 Detailed validation report saved to: {validation_report}"
+                            )
+
                 except ImportError:
                     print("⚠️  Data validation module not available")
                 except Exception as e:
                     print(f"⚠️  Validation failed: {e}")
-                
-                print("="*50)
-            
+
+                print("=" * 50)
+
             return True
 
     except FileNotFoundError as e:
@@ -182,7 +207,9 @@ def convert_dbf_to_csv(input_file, output_file=None, delimiter=";", encoding="ut
 
 def main():
     # Add command line argument parsing for better usability
-    parser = argparse.ArgumentParser(description="Convert DBF files to CSV format with optional data validation")
+    parser = argparse.ArgumentParser(
+        description="Convert DBF files to CSV format with optional data validation"
+    )
     parser.add_argument("input_file", help="Path to the input DBF file")
     parser.add_argument("-o", "--output", help="Path to the output CSV file (optional)")
     parser.add_argument(
@@ -201,12 +228,12 @@ def main():
     # Parse arguments
     args = parser.parse_args()
     success = convert_dbf_to_csv(
-        args.input_file, 
-        args.output, 
-        args.delimiter, 
+        args.input_file,
+        args.output,
+        args.delimiter,
         args.encoding,
         args.validate,
-        args.validation_report
+        args.validation_report,
     )
     sys.exit(0 if success else 1)
 

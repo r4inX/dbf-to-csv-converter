@@ -44,23 +44,23 @@ jobs:
     - name: Lint with flake8
       run: |
         # Stop the build if there are Python syntax errors or undefined names
-        flake8 dbf2csv.py --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=__pycache__,.git
         # Exit-zero treats all errors as warnings
-        flake8 dbf2csv.py check_csv.py test_encoding.py --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics --exclude=__pycache__,.git
     
     - name: Check code formatting with black
-      run: black --check --diff dbf2csv.py check_csv.py test_encoding.py
+      run: black --check --diff . --exclude="/(\.git|__pycache__|\.pytest_cache|uploads)/"
     
     - name: Check import sorting with isort
-      run: isort --check-only --diff dbf2csv.py check_csv.py test_encoding.py
+      run: isort --check-only --diff . --skip-glob="__pycache__/*" --skip-glob=".git/*"
     
     - name: Type checking with mypy
-      run: mypy dbf2csv.py --ignore-missing-imports
+      run: mypy . --ignore-missing-imports --exclude="(__pycache__|\.git|uploads|\.pytest_cache)"
       continue-on-error: true  # Allow this to fail for now
     
     - name: Test with pytest
       run: |
-        pytest tests/ -v --cov=dbf2csv --cov-report=xml --cov-report=term-missing
+        pytest tests/ -v --cov=. --cov-report=xml --cov-report=term-missing --ignore=__pycache__
     
     - name: Upload coverage to Codecov
       if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'
@@ -94,5 +94,5 @@ jobs:
       continue-on-error: true
     
     - name: Run bandit security scan
-      run: bandit -r dbf2csv.py
+      run: bandit -r . -f json -o bandit-report.json --exclude=".git,__pycache__,uploads,.pytest_cache" || bandit -r . --exclude=".git,__pycache__,uploads,.pytest_cache"
       continue-on-error: true
